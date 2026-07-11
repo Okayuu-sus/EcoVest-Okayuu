@@ -39,7 +39,7 @@ export default function Header({ authed = false }: HeaderProps) {
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-6 py-4">
         <Link href={authed ? "/account" : "/"} className="flex items-center gap-3">
           <Image
-            src="/GROWicon.png"
+            src="/EcoVestIcon.png"
             alt="GROW icon"
             width={36}
             height={36}

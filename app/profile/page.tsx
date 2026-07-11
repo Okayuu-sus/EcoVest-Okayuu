@@ -51,7 +51,7 @@ export default function ProfilePage() {
       <div className="animate-pop-in relative w-full max-w-lg rounded-2xl border border-white/10 bg-white p-8 shadow-xl">
         <div className="mb-6 flex items-center gap-2">
           <Image
-            src="/GROWicon.png"
+            src="/EcoVestIcon.png"
             alt="GROW icon"
             width={36}
             height={36}

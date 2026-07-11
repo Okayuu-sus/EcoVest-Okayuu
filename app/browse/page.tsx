@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Header from "@/components/Header";
@@ -18,10 +18,16 @@ import { AccountSummary, Holding } from "@/lib/types";
 
 const dataset = holdingsData as Holding[];
 
+type SortKey = "ticker" | "trend" | "sector" | "price" | "esgScore" | "youHold";
+type SortDirection = "asc" | "desc";
+
 export default function BrowsePage() {
   const router = useRouter();
   const [account, setAccount] = useState<AccountSummary | null>(null);
   const [modal, setModal] = useState<{ holding: Holding; side: "BUY" | "SELL" } | null>(null);
+  const [sortConfig, setSortConfig] = useState<
+    { key: SortKey; direction: SortDirection } | null
+  >(null);
 
   async function loadAccount() {
     const res = await fetch("/api/account");
@@ -44,9 +50,80 @@ export default function BrowsePage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const heldSharesMap = useMemo(
+    () => new Map((account?.positions ?? []).map((p) => [p.ticker, p.shares])),
+    [account?.positions]
+  );
+
+  const trendMap = useMemo(
+    () =>
+      new Map(
+        dataset.map((h) => {
+          const series = generatePriceSeries(h.ticker, h.avgReturn, h.volatility, h.price, 24);
+          return [h.ticker, seriesChangePercent(series)];
+        })
+      ),
+    []
+  );
+
   function heldShares(ticker: string): number {
-    return account?.positions.find((p) => p.ticker === ticker)?.shares ?? 0;
+    return heldSharesMap.get(ticker) ?? 0;
   }
+
+  function handleSort(key: SortKey) {
+    setSortConfig((prev) => {
+      if (prev?.key === key) {
+        return { key, direction: prev.direction === "asc" ? "desc" : "asc" };
+      }
+      return { key, direction: key === "trend" ? "desc" : "asc" };
+    });
+  }
+
+  function sortGlyph(key: SortKey): string {
+    if (sortConfig?.key !== key) return "↕";
+    return sortConfig.direction === "asc" ? "▲" : "▼";
+  }
+
+  function ariaSortFor(
+    key: SortKey
+  ): "ascending" | "descending" | "none" {
+    if (sortConfig?.key !== key) return "none";
+    return sortConfig.direction === "asc" ? "ascending" : "descending";
+  }
+
+  const sortedDataset = useMemo(() => {
+    if (!sortConfig) return dataset;
+
+    const rows = [...dataset];
+    rows.sort((a, b) => {
+      let cmp = 0;
+
+      switch (sortConfig.key) {
+        case "ticker":
+          cmp = a.ticker.localeCompare(b.ticker);
+          break;
+        case "trend":
+          cmp = (trendMap.get(a.ticker) ?? 0) - (trendMap.get(b.ticker) ?? 0);
+          break;
+        case "sector":
+          cmp = a.sector.localeCompare(b.sector);
+          break;
+        case "price":
+          cmp = a.price - b.price;
+          break;
+        case "esgScore":
+          cmp = a.esgScore - b.esgScore;
+          break;
+        case "youHold":
+          cmp = heldShares(a.ticker) - heldShares(b.ticker);
+          break;
+      }
+
+      return sortConfig.direction === "asc" ? cmp : -cmp;
+    });
+
+    return rows;
+  }, [sortConfig, heldSharesMap, trendMap]);
 
   const recommended = account?.interests?.length
     ? dataset
@@ -253,17 +330,71 @@ export default function BrowsePage() {
           <table className="w-full min-w-[860px] text-sm">
             <thead>
               <tr className="border-b border-slate-200 text-left text-xs uppercase tracking-wide text-slate-500">
-                <th className="py-2 pr-1">Ticker</th>
-                <th className="py-2 pr-3">Trend</th>
-                <th className="py-2 pr-3">Sector</th>
-                <th className="py-2 pr-3">Price</th>
-                <th className="py-2 pr-3">Clean-Energy Score</th>
-                <th className="py-2 pr-3">You Hold</th>
+                <th className="py-2 pr-1" aria-sort={ariaSortFor("ticker")}>
+                  <button
+                    type="button"
+                    onClick={() => handleSort("ticker")}
+                    className="inline-flex items-center gap-1 transition hover:text-slate-700"
+                  >
+                    Ticker
+                    <span aria-hidden="true" className="text-[10px]">{sortGlyph("ticker")}</span>
+                  </button>
+                </th>
+                <th className="py-2 pr-3" aria-sort={ariaSortFor("trend")}>
+                  <button
+                    type="button"
+                    onClick={() => handleSort("trend")}
+                    className="inline-flex items-center gap-1 transition hover:text-slate-700"
+                  >
+                    Trend
+                    <span aria-hidden="true" className="text-[10px]">{sortGlyph("trend")}</span>
+                  </button>
+                </th>
+                <th className="py-2 pr-3" aria-sort={ariaSortFor("sector")}>
+                  <button
+                    type="button"
+                    onClick={() => handleSort("sector")}
+                    className="inline-flex items-center gap-1 transition hover:text-slate-700"
+                  >
+                    Sector
+                    <span aria-hidden="true" className="text-[10px]">{sortGlyph("sector")}</span>
+                  </button>
+                </th>
+                <th className="py-2 pr-3" aria-sort={ariaSortFor("price")}>
+                  <button
+                    type="button"
+                    onClick={() => handleSort("price")}
+                    className="inline-flex items-center gap-1 transition hover:text-slate-700"
+                  >
+                    Price
+                    <span aria-hidden="true" className="text-[10px]">{sortGlyph("price")}</span>
+                  </button>
+                </th>
+                <th className="py-2 pr-3" aria-sort={ariaSortFor("esgScore")}>
+                  <button
+                    type="button"
+                    onClick={() => handleSort("esgScore")}
+                    className="inline-flex items-center gap-1 transition hover:text-slate-700"
+                  >
+                    Clean-Energy Score
+                    <span aria-hidden="true" className="text-[10px]">{sortGlyph("esgScore")}</span>
+                  </button>
+                </th>
+                <th className="py-2 pr-3" aria-sort={ariaSortFor("youHold")}>
+                  <button
+                    type="button"
+                    onClick={() => handleSort("youHold")}
+                    className="inline-flex items-center gap-1 transition hover:text-slate-700"
+                  >
+                    You Hold
+                    <span aria-hidden="true" className="text-[10px]">{sortGlyph("youHold")}</span>
+                  </button>
+                </th>
                 <th className="py-2 pr-3 text-right">Trade</th>
               </tr>
             </thead>
             <tbody>
-              {dataset.map((h, i) => {
+              {sortedDataset.map((h, i) => {
                 const shares = heldShares(h.ticker);
                 return (
                   <tr

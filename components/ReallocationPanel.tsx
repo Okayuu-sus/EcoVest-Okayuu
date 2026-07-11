@@ -1,10 +1,12 @@
 "use client";
 
 import Link from "next/link";
+import { useMemo, useState } from "react";
 import { Holding, ReallocationMove } from "@/lib/types";
 import IconChip from "./IconChip";
 import StockSparkline from "./StockSparkline";
 import { ArrowsShuffleIcon } from "./Icons";
+import { generatePriceSeries, seriesChangePercent } from "@/lib/priceHistory";
 
 interface ReallocationPanelProps {
   moves: ReallocationMove[];
@@ -18,6 +20,9 @@ function pct(n: number): string {
   return `${(n * 100).toFixed(1)}%`;
 }
 
+type SortKey = "holding" | "trend" | "sector" | "score" | "before" | "after" | "change";
+type SortDirection = "asc" | "desc";
+
 export default function ReallocationPanel({
   moves,
   dataset,
@@ -26,7 +31,80 @@ export default function ReallocationPanel({
   applyDisabled,
 }: ReallocationPanelProps) {
   const map = new Map(dataset.map((h) => [h.ticker, h]));
-  const sorted = [...moves].sort((a, b) => b.delta - a.delta);
+  const trendMap = useMemo(
+    () =>
+      new Map(
+        dataset.map((h) => {
+          const series = generatePriceSeries(h.ticker, h.avgReturn, h.volatility, h.price, 24);
+          return [h.ticker, seriesChangePercent(series)];
+        })
+      ),
+    [dataset]
+  );
+  const [sortConfig, setSortConfig] = useState<
+    { key: SortKey; direction: SortDirection } | null
+  >(null);
+
+  function handleSort(key: SortKey) {
+    setSortConfig((prev) => {
+      if (prev?.key === key) {
+        return { key, direction: prev.direction === "asc" ? "desc" : "asc" };
+      }
+      return { key, direction: key === "trend" ? "desc" : "asc" };
+    });
+  }
+
+  function sortGlyph(key: SortKey): string {
+    if (sortConfig?.key !== key) return "↕";
+    return sortConfig.direction === "asc" ? "▲" : "▼";
+  }
+
+  function ariaSortFor(key: SortKey): "ascending" | "descending" | "none" {
+    if (sortConfig?.key !== key) return "none";
+    return sortConfig.direction === "asc" ? "ascending" : "descending";
+  }
+
+  const sorted = useMemo(() => {
+    const rows = [...moves];
+
+    if (!sortConfig) {
+      return rows.sort((a, b) => b.delta - a.delta);
+    }
+
+    rows.sort((a, b) => {
+      const left = map.get(a.ticker);
+      const right = map.get(b.ticker);
+      let cmp = 0;
+
+      switch (sortConfig.key) {
+        case "holding":
+          cmp = a.ticker.localeCompare(b.ticker);
+          break;
+        case "trend":
+          cmp = (trendMap.get(a.ticker) ?? 0) - (trendMap.get(b.ticker) ?? 0);
+          break;
+        case "sector":
+          cmp = (left?.sector ?? "").localeCompare(right?.sector ?? "");
+          break;
+        case "score":
+          cmp = (left?.esgScore ?? 0) - (right?.esgScore ?? 0);
+          break;
+        case "before":
+          cmp = a.fromWeight - b.fromWeight;
+          break;
+        case "after":
+          cmp = a.toWeight - b.toWeight;
+          break;
+        case "change":
+          cmp = a.delta - b.delta;
+          break;
+      }
+
+      return sortConfig.direction === "asc" ? cmp : -cmp;
+    });
+
+    return rows;
+  }, [map, moves, sortConfig, trendMap]);
 
   return (
     <div className="card-hover">
@@ -57,13 +135,76 @@ export default function ReallocationPanel({
         <table className="w-full min-w-[680px] text-sm">
           <thead>
             <tr className="border-b border-slate-200 text-left text-xs uppercase tracking-wide text-slate-500">
-              <th className="py-2 pr-1">Holding</th>
-              <th className="py-2 pr-3">Trend</th>
-              <th className="py-2 pr-3">Sector</th>
-              <th className="py-2 pr-3">Clean-Energy Score</th>
-              <th className="py-2 pr-3">Before</th>
-              <th className="py-2 pr-3">After</th>
-              <th className="py-2 pr-3">Change</th>
+              <th className="py-2 pr-1" aria-sort={ariaSortFor("holding")}>
+                <button
+                  type="button"
+                  onClick={() => handleSort("holding")}
+                  className="inline-flex items-center gap-1 transition hover:text-slate-700"
+                >
+                  Holding
+                  <span aria-hidden="true" className="text-[10px]">{sortGlyph("holding")}</span>
+                </button>
+              </th>
+              <th className="py-2 pr-3" aria-sort={ariaSortFor("trend")}>
+                <button
+                  type="button"
+                  onClick={() => handleSort("trend")}
+                  className="inline-flex items-center gap-1 transition hover:text-slate-700"
+                >
+                  Trend
+                  <span aria-hidden="true" className="text-[10px]">{sortGlyph("trend")}</span>
+                </button>
+              </th>
+              <th className="py-2 pr-3" aria-sort={ariaSortFor("sector")}>
+                <button
+                  type="button"
+                  onClick={() => handleSort("sector")}
+                  className="inline-flex items-center gap-1 transition hover:text-slate-700"
+                >
+                  Sector
+                  <span aria-hidden="true" className="text-[10px]">{sortGlyph("sector")}</span>
+                </button>
+              </th>
+              <th className="py-2 pr-3" aria-sort={ariaSortFor("score")}>
+                <button
+                  type="button"
+                  onClick={() => handleSort("score")}
+                  className="inline-flex items-center gap-1 transition hover:text-slate-700"
+                >
+                  Clean-Energy Score
+                  <span aria-hidden="true" className="text-[10px]">{sortGlyph("score")}</span>
+                </button>
+              </th>
+              <th className="py-2 pr-3" aria-sort={ariaSortFor("before")}>
+                <button
+                  type="button"
+                  onClick={() => handleSort("before")}
+                  className="inline-flex items-center gap-1 transition hover:text-slate-700"
+                >
+                  Before
+                  <span aria-hidden="true" className="text-[10px]">{sortGlyph("before")}</span>
+                </button>
+              </th>
+              <th className="py-2 pr-3" aria-sort={ariaSortFor("after")}>
+                <button
+                  type="button"
+                  onClick={() => handleSort("after")}
+                  className="inline-flex items-center gap-1 transition hover:text-slate-700"
+                >
+                  After
+                  <span aria-hidden="true" className="text-[10px]">{sortGlyph("after")}</span>
+                </button>
+              </th>
+              <th className="py-2 pr-3" aria-sort={ariaSortFor("change")}>
+                <button
+                  type="button"
+                  onClick={() => handleSort("change")}
+                  className="inline-flex items-center gap-1 transition hover:text-slate-700"
+                >
+                  Change
+                  <span aria-hidden="true" className="text-[10px]">{sortGlyph("change")}</span>
+                </button>
+              </th>
             </tr>
           </thead>
           <tbody>

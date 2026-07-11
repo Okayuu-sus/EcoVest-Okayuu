@@ -161,3 +161,82 @@ body {
 .toast-enter {
   animation: toastIn 0.25s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
+
+@keyframes growFadeDown {
+  from {
+    opacity: 0;
+    transform: translateY(-16px);
+    clip-path: inset(0 0 100% 0);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+.grow-stack > p {
+  animation: growFadeDown 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+  will-change: transform, opacity, clip-path;
+}
+
+.hero-fade-stack > * {
+  animation: growFadeDown 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+  will-change: transform, opacity, clip-path;
+}
+
+.grow-stack > p:nth-child(1) {
+  animation-delay: 0.06s;
+}
+
+.grow-stack > p:nth-child(2) {
+  animation-delay: 0.16s;
+}
+
+.grow-stack > p:nth-child(3) {
+  animation-delay: 0.26s;
+}
+
+.grow-stack > p:nth-child(4) {
+  animation-delay: 0.36s;
+}
+
+.hero-fade-stack > :nth-child(1) {
+  animation-delay: 0.08s;
+}
+
+.hero-fade-stack > :nth-child(2) {
+  animation-delay: 0.16s;
+}
+
+.hero-fade-stack > :nth-child(3) {
+  animation-delay: 0.24s;
+}
+
+.hero-fade-stack > :nth-child(4) {
+  animation-delay: 0.32s;
+}
+
+.hero-fade-stack > :nth-child(5) {
+  animation-delay: 0.4s;
+}
+
+.hero-fade-stack > :nth-child(6) {
+  animation-delay: 0.48s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .grow-stack > p {
+    animation: none;
+    opacity: 1;
+    transform: none;
+    clip-path: inset(0 0 0 0);
+  }
+
+  .hero-fade-stack > * {
+    animation: none;
+    opacity: 1;
+    transform: none;
+    clip-path: inset(0 0 0 0);
+  }
+}

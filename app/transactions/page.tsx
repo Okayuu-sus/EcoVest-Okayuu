@@ -1,13 +1,90 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Header from "@/components/Header";
 import { TransactionRecord } from "@/lib/types";
 
+type SortKey = "createdAt" | "ticker" | "side" | "shares" | "price" | "cashAfter";
+
+interface SortConfig {
+  key: SortKey;
+  direction: "asc" | "desc";
+}
+
 export default function TransactionsPage() {
   const router = useRouter();
   const [transactions, setTransactions] = useState<TransactionRecord[] | null>(null);
+  const [sideFilter, setSideFilter] = useState<"ALL" | "BUY" | "SELL" | "BONUS">("ALL");
+  const [sortConfig, setSortConfig] = useState<SortConfig>({
+    key: "createdAt",
+    direction: "desc",
+  });
+
+  const filteredTransactions = useMemo(() => {
+    if (!transactions) return null;
+    if (sideFilter === "ALL") return transactions;
+    return transactions.filter((t) => t.side === sideFilter);
+  }, [transactions, sideFilter]);
+
+  const sortedTransactions = useMemo(() => {
+    if (!filteredTransactions) return null;
+
+    const rows = [...filteredTransactions];
+    rows.sort((a, b) => {
+      let cmp = 0;
+      switch (sortConfig.key) {
+        case "createdAt":
+          cmp = new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+          break;
+        case "ticker":
+          cmp = a.ticker.localeCompare(b.ticker);
+          break;
+        case "side":
+          {
+            const sideOrder: Record<TransactionRecord["side"], number> = {
+              BUY: 0,
+              SELL: 1,
+              BONUS: 2,
+            };
+            cmp = sideOrder[a.side] - sideOrder[b.side];
+          }
+          break;
+        case "shares":
+          cmp = a.shares - b.shares;
+          break;
+        case "price":
+          cmp = a.price - b.price;
+          break;
+        case "cashAfter":
+          cmp = a.cashAfter - b.cashAfter;
+          break;
+      }
+
+      return sortConfig.direction === "asc" ? cmp : -cmp;
+    });
+
+    return rows;
+  }, [filteredTransactions, sortConfig]);
+
+  function handleSort(key: SortKey) {
+    setSortConfig((prev) => {
+      if (prev.key === key) {
+        return { key, direction: prev.direction === "asc" ? "desc" : "asc" };
+      }
+      return { key, direction: "asc" };
+    });
+  }
+
+  function sortGlyph(key: SortKey): string {
+    if (sortConfig.key !== key) return "↕";
+    return sortConfig.direction === "asc" ? "↑" : "↓";
+  }
+
+  function ariaSortFor(key: SortKey): "none" | "ascending" | "descending" {
+    if (sortConfig.key !== key) return "none";
+    return sortConfig.direction === "asc" ? "ascending" : "descending";
+  }
 
   useEffect(() => {
     (async () => {
@@ -43,31 +120,121 @@ export default function TransactionsPage() {
           Every simulated trade you&apos;ve made, most recent first.
         </p>
 
+        <div className="animate-fade-in-up mb-4 flex flex-wrap items-center gap-3" style={{ animationDelay: "60ms" }}>
+          <div className="flex items-center gap-0.5 rounded-full border border-slate-200 bg-white p-1">
+            {([
+              { key: "ALL", label: "All" },
+              { key: "BUY", label: "Buy" },
+              { key: "SELL", label: "Sell" },
+              { key: "BONUS", label: "Bonus" },
+            ] as const).map((option) => {
+              const active = sideFilter === option.key;
+              return (
+                <button
+                  key={option.key}
+                  type="button"
+                  onClick={() => setSideFilter(option.key)}
+                  className={`rounded-full px-3.5 py-1.5 text-sm font-medium transition-all duration-200 ${
+                    active
+                      ? "bg-navy-900 text-white shadow-sm"
+                      : "text-slate-600 hover:bg-slate-100 hover:text-navy-900"
+                  }`}
+                >
+                  {option.label}
+                </button>
+              );
+            })}
+          </div>
+          {sortedTransactions && (
+            <span className="text-sm text-slate-500">
+              {sortedTransactions.length} row{sortedTransactions.length === 1 ? "" : "s"}
+            </span>
+          )}
+        </div>
+
         <div className="animate-fade-in-up card overflow-x-auto" style={{ animationDelay: "80ms" }}>
-          {!transactions ? (
+          {!sortedTransactions ? (
             <div className="space-y-2">
               {Array.from({ length: 4 }).map((_, i) => (
                 <div key={i} className="skeleton h-9 rounded-lg" />
               ))}
             </div>
-          ) : transactions.length === 0 ? (
-            <p className="text-sm text-slate-500">
-              No trades yet. Buy something from Browse or try the sample portfolio.
-            </p>
+          ) : sortedTransactions.length === 0 ? (
+            transactions && transactions.length > 0 ? (
+              <p className="text-sm text-slate-500">No matching rows for this filter yet.</p>
+            ) : (
+              <p className="text-sm text-slate-500">
+                No trades yet. Buy something from Browse or try the sample portfolio.
+              </p>
+            )
           ) : (
             <table className="w-full min-w-[560px] text-sm">
               <thead>
                 <tr className="border-b border-slate-200 text-left text-xs uppercase tracking-wide text-slate-500">
-                  <th className="py-2 pr-3">Date</th>
-                  <th className="py-2 pr-3">Ticker</th>
-                  <th className="py-2 pr-3">Side</th>
-                  <th className="py-2 pr-3">Shares</th>
-                  <th className="py-2 pr-3">Price</th>
-                  <th className="py-2 pr-3">Cash After</th>
+                  <th className="py-2 pr-3" aria-sort={ariaSortFor("createdAt")}>
+                    <button
+                      type="button"
+                      onClick={() => handleSort("createdAt")}
+                      className="inline-flex items-center gap-1 transition hover:text-slate-700"
+                    >
+                      Date
+                      <span aria-hidden="true" className="text-[10px]">{sortGlyph("createdAt")}</span>
+                    </button>
+                  </th>
+                  <th className="py-2 pr-3" aria-sort={ariaSortFor("ticker")}>
+                    <button
+                      type="button"
+                      onClick={() => handleSort("ticker")}
+                      className="inline-flex items-center gap-1 transition hover:text-slate-700"
+                    >
+                      Ticker
+                      <span aria-hidden="true" className="text-[10px]">{sortGlyph("ticker")}</span>
+                    </button>
+                  </th>
+                  <th className="py-2 pr-3" aria-sort={ariaSortFor("side")}>
+                    <button
+                      type="button"
+                      onClick={() => handleSort("side")}
+                      className="inline-flex items-center gap-1 transition hover:text-slate-700"
+                    >
+                      Side
+                      <span aria-hidden="true" className="text-[10px]">{sortGlyph("side")}</span>
+                    </button>
+                  </th>
+                  <th className="py-2 pr-3" aria-sort={ariaSortFor("shares")}>
+                    <button
+                      type="button"
+                      onClick={() => handleSort("shares")}
+                      className="inline-flex items-center gap-1 transition hover:text-slate-700"
+                    >
+                      Shares
+                      <span aria-hidden="true" className="text-[10px]">{sortGlyph("shares")}</span>
+                    </button>
+                  </th>
+                  <th className="py-2 pr-3" aria-sort={ariaSortFor("price")}>
+                    <button
+                      type="button"
+                      onClick={() => handleSort("price")}
+                      className="inline-flex items-center gap-1 transition hover:text-slate-700"
+                    >
+                      Price
+                      <span aria-hidden="true" className="text-[10px]">{sortGlyph("price")}</span>
+                    </button>
+                  </th>
+                  <th className="py-2 pr-3" aria-sort={ariaSortFor("cashAfter")}>
+                    <button
+                      type="button"
+                      onClick={() => handleSort("cashAfter")}
+                      className="inline-flex items-center gap-1 transition hover:text-slate-700"
+                    >
+                      Cash After
+                      <span aria-hidden="true" className="text-[10px]">{sortGlyph("cashAfter")}</span>
+                    </button>
+                  </th>
                 </tr>
               </thead>
               <tbody>
-                {transactions.map((t, i) => (
+                {sortedTransactions.map((t, i) => (
                   <tr
                     key={t.id}
                     className="animate-fade-in-up border-b border-slate-100 transition-colors last:border-0 hover:bg-slate-50"

@@ -8,9 +8,9 @@ export const metadata: Metadata = {
   description:
     "Analyze a stock/ETF portfolio and get an illustrative clean-energy reallocation, powered by Gemini.",
   icons: {
-    icon: [{ url: "/GROWiconNBG.png?v=2", type: "image/png" }],
-    shortcut: [{ url: "/GROWiconNBG.png?v=2", type: "image/png" }],
-    apple: [{ url: "/GROWiconNBG.png?v=2", type: "image/png" }],
+    icon: [{ url: "/EcoVestIconNBG.png?v=2", type: "image/png" }],
+    shortcut: [{ url: "/EcoVestIconNBG.png?v=2", type: "image/png" }],
+    apple: [{ url: "/EcoVestIconNBG.png?v=2", type: "image/png" }],
   },
 };
 
