@@ -7,6 +7,7 @@ import GradientBanner from "./GradientBanner";
 import Stepper from "./Stepper";
 import LandingReallocationPreview from "./LandingReallocationPreview";
 import Footer from "./Footer";
+import ForestSilhouette from "./ForestSilhouette";
 import {
   TrendingUpIcon,
   LeafIcon,
@@ -19,37 +20,69 @@ import {
 export default function LandingScreen() {
   return (
     <div>
-      {/* HERO */}
+      {/* HERO — deep forest gradient with a hand-drawn treeline at the base */}
       <section className="relative overflow-hidden bg-gradient-to-br from-navy-950 via-navy-900 to-forest-700">
-        <div className="pointer-events-none absolute -left-24 -top-24 h-72 w-72 rounded-full bg-forest-500/20 blur-3xl" />
-        <div className="pointer-events-none absolute -right-16 top-1/3 h-80 w-80 rounded-full bg-blue-500/10 blur-3xl" />
+        <div className="pointer-events-none absolute -left-24 -top-24 h-72 w-72 animate-float rounded-full bg-forest-500/20 blur-3xl" />
+        <div
+          className="pointer-events-none absolute -right-16 top-1/3 h-80 w-80 animate-float rounded-full bg-blue-500/10 blur-3xl"
+          style={{ animationDelay: "1.4s" }}
+        />
+        <LeafIcon className="animate-sway pointer-events-none absolute left-[8%] top-[18%] h-8 w-8 text-forest-300/40" />
+        <span
+          className="animate-sway pointer-events-none absolute right-[12%] top-[45%] block"
+          style={{ animationDelay: "0.8s" }}
+        >
+          <LeafIcon className="h-10 w-10 text-forest-300/30" />
+        </span>
 
-        <div className="relative mx-auto max-w-6xl px-6 py-20">
-          <div className="grid items-center gap-10 lg:grid-cols-[0.75fr_1.25fr]">
-            <div className="order-2 flex w-full justify-start lg:-ml-20 lg:order-1">
-              <div className="space-y-1 text-left font-extrabold leading-none tracking-tight">
-                <p className="flex items-baseline leading-none text-slate-300">
-                  <Image
-                    src="/GROWiconNBG.png?v=2"
-                    alt="G"
-                    width={128}
-                    height={128}
-                    className="h-[96px] w-[96px] object-contain sm:h-[128px] sm:w-[128px]"
-                  />
-                  <span className="text-5xl leading-none sm:text-6xl">reen</span>
-                </p>
-                <p className="flex items-baseline leading-none text-slate-300">
-                  <span className="text-[96px] uppercase leading-none text-[#2e984d] sm:text-[128px]">R</span>
-                  <span className="text-5xl leading-none sm:text-6xl">eturn</span>
-                </p>
-                <p className="flex items-baseline leading-none text-slate-300">
-                  <span className="text-[96px] uppercase leading-none text-[#2e984d] sm:text-[128px]">O</span>
-                  <span className="text-5xl leading-none sm:text-6xl">n</span>
-                </p>
-                <p className="flex items-baseline leading-none text-slate-300">
-                  <span className="text-[96px] uppercase leading-none text-[#2e984d] sm:text-[128px]">W</span>
-                  <span className="text-5xl leading-none sm:text-6xl">ealth</span>
-                </p>
+        <div className="relative mx-auto max-w-5xl px-6 pb-32 pt-20 text-center">
+          <span className="badge mx-auto mb-6 w-fit bg-forest-500/20 text-forest-300">
+            PORTFOLIO GREENIFIER
+          </span>
+
+          <h1 className="text-4xl font-bold leading-tight text-white sm:text-5xl">
+            Invest in the Future of
+          </h1>
+          <h1 className="mt-1 text-4xl font-bold leading-tight text-forest-400 sm:text-5xl">
+            Clean Energy Portfolios
+          </h1>
+
+          <p className="mx-auto mt-5 max-w-xl text-base leading-relaxed text-slate-300">
+            EcoVest is a simulated stock and ETF trading account — sign up,
+            start with $10,000 in play money, and see a clean-energy-tilted
+            reallocation with real weighted return, volatility, and
+            diversification math, plus Gemini-grounded explanations for every
+            change. No real money, ever.
+          </p>
+
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
+            <Link
+              href="/signup"
+              className="inline-flex items-center gap-2 rounded-lg bg-forest-500 px-6 py-3 text-base font-semibold text-white shadow-lg transition hover:bg-forest-400"
+            >
+              Get Started Free
+              <ArrowRightIcon className="h-4 w-4" />
+            </Link>
+            <Link
+              href="/login"
+              className="inline-flex items-center gap-2 rounded-lg border border-white/25 bg-white/10 px-6 py-3 text-base font-semibold text-white backdrop-blur-sm transition hover:bg-white/20"
+            >
+              Log In
+            </Link>
+          </div>
+
+          <div className="mt-10 flex flex-wrap justify-center gap-4">
+            {[
+              { value: "19", label: "Stocks & ETFs Tracked" },
+              { value: "3", label: "Sponsor Tracks" },
+              { value: "Live", label: "Gemini API" },
+            ].map((s) => (
+              <div
+                key={s.label}
+                className="rounded-xl border border-white/10 bg-white/10 px-6 py-3 backdrop-blur-sm"
+              >
+                <div className="text-xl font-bold text-white">{s.value}</div>
+                <div className="text-xs text-slate-300">{s.label}</div>
               </div>
             </div>
 
@@ -107,14 +140,16 @@ export default function LandingScreen() {
             </div>
           </div>
         </div>
+
+        <ForestSilhouette className="h-32 text-forest-950" />
       </section>
 
       {/* ABOUT */}
-      <section className="bg-forest-500/5">
+      <section className="bg-forest-50">
         <div className="mx-auto max-w-5xl px-6 py-16">
           <div className="grid items-center gap-10 lg:grid-cols-2">
             <div>
-              <h2 className="text-3xl font-bold text-navy-900">
+              <h2 className="text-3xl font-bold text-forest-900">
                 About the <span className="text-forest-600">Reallocation</span>
               </h2>
               <p className="mt-4 text-slate-600">
@@ -171,7 +206,7 @@ export default function LandingScreen() {
       {/* WHY ECOVEST */}
       <section className="bg-white">
         <div className="mx-auto max-w-5xl px-6 py-16">
-          <h2 className="text-center text-3xl font-bold text-navy-900">
+          <h2 className="text-center text-3xl font-bold text-forest-900">
             Four reasons this holds up under scrutiny
           </h2>
           <p className="mx-auto mt-2 max-w-xl text-center text-slate-500">
@@ -213,9 +248,9 @@ export default function LandingScreen() {
       </section>
 
       {/* HOW IT WORKS */}
-      <section className="bg-slate-50">
+      <section className="bg-forest-100/50">
         <div className="mx-auto max-w-5xl px-6 py-16">
-          <h2 className="text-center text-3xl font-bold text-navy-900">How It Works</h2>
+          <h2 className="text-center text-3xl font-bold text-forest-900">How It Works</h2>
           <p className="mx-auto mt-2 max-w-xl text-center text-slate-500">
             From raw holdings to a Gemini-explained reallocation in three steps.
           </p>
@@ -322,7 +357,7 @@ export default function LandingScreen() {
       {/* SPONSOR TRACKS */}
       <section className="bg-white">
         <div className="mx-auto max-w-5xl px-6 py-16">
-          <h2 className="text-center text-3xl font-bold text-navy-900">
+          <h2 className="text-center text-3xl font-bold text-forest-900">
             Built for Three Sponsor Tracks
           </h2>
           <p className="mx-auto mt-2 max-w-xl text-center text-slate-500">
@@ -370,45 +405,47 @@ export default function LandingScreen() {
         </div>
       </section>
 
-      <section className="bg-navy-950">
+      <section className="bg-forest-950">
         <div className="mx-auto max-w-3xl px-6 py-14 text-center">
           <h3 className="text-2xl font-bold text-white">
             Judged on Substance, Not Just Style
           </h3>
-          <p className="mt-3 text-slate-300">
+          <p className="mt-3 text-forest-100">
             Every metric on this dashboard traces back to a specific holding
             and a specific formula — built to hold up under real scrutiny.
           </p>
         </div>
       </section>
 
-      {/* CLOSING CTA */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-navy-950 via-navy-900 to-forest-700">
-        <div className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-forest-500/20 blur-3xl" />
-        <div className="relative mx-auto max-w-2xl px-6 py-16 text-center">
+      {/* CLOSING CTA — deep forest gradient with treeline, matching every other tab */}
+      <section className="relative overflow-hidden bg-gradient-to-b from-forest-700 via-forest-900 to-forest-950 pb-32 pt-16">
+        <div className="pointer-events-none absolute -right-24 -top-10 h-72 w-72 animate-float rounded-full bg-forest-500/20 blur-3xl" />
+        <div className="relative mx-auto max-w-2xl px-6 text-center">
           <h2 className="text-3xl font-bold text-white sm:text-4xl">
             Ready to Green Your
           </h2>
-          <h2 className="mt-1 text-3xl font-bold text-forest-400 sm:text-4xl">
+          <h2 className="mt-1 text-3xl font-bold text-forest-300 sm:text-4xl">
             Stock and ETF Portfolio?
           </h2>
-          <p className="mx-auto mt-4 max-w-md text-slate-300">
+          <p className="mx-auto mt-4 max-w-md text-forest-100">
             Sign up, load the sample portfolio, and see a full clean-energy
             reallocation, powered live by Gemini, in under a minute.
           </p>
           <Link
             href="/signup"
-            className="mt-7 inline-flex items-center gap-2 rounded-lg bg-forest-500 px-6 py-3 text-base font-semibold text-white shadow-lg transition hover:bg-forest-400"
+            className="mt-7 inline-flex items-center gap-2 rounded-lg bg-white px-6 py-3 text-base font-semibold text-forest-800 shadow-lg transition hover:-translate-y-0.5 hover:shadow-glow-soft"
           >
             Get Started Free
             <ArrowRightIcon className="h-4 w-4" />
           </Link>
-          <p className="mt-8 text-xs text-slate-500">
+          <p className="mt-8 text-xs text-forest-100/60">
             All figures shown throughout EcoVest are illustrative and
             simulated for demonstration purposes. This is not investment
             advice.
           </p>
         </div>
+
+        <ForestSilhouette className="h-32 text-forest-950" />
       </section>
 
       <Footer />
