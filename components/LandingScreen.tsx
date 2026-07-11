@@ -85,60 +85,7 @@ export default function LandingScreen() {
                 <div className="text-xl font-bold text-white">{s.value}</div>
                 <div className="text-xs text-slate-300">{s.label}</div>
               </div>
-            </div>
-
-            <div className="order-1 text-center lg:order-2 lg:text-left">
-              <span className="badge mb-6 w-fit bg-forest-500/20 text-forest-300 lg:mx-0">
-                PORTFOLIO GREENIFIER
-              </span>
-
-              <h1 className="text-4xl font-bold leading-tight text-white sm:text-5xl">
-                Invest in the Future of
-              </h1>
-              <h1 className="mt-1 text-4xl font-bold leading-tight text-forest-400 sm:text-5xl">
-                Clean Energy Portfolios
-              </h1>
-
-              <p className="mx-auto mt-5 max-w-xl text-base leading-relaxed text-slate-300 lg:mx-0">
-                EcoVest is a simulated stock and ETF trading account — sign up,
-                start with $10,000 in play money, and see a clean-energy-tilted
-                reallocation with real weighted return, volatility, and
-                diversification math, plus Gemini-grounded explanations for every
-                change. No real money, ever.
-              </p>
-
-              <div className="mt-8 flex flex-wrap items-center justify-center gap-4 lg:justify-start">
-                <Link
-                  href="/signup"
-                  className="inline-flex items-center gap-2 rounded-lg bg-forest-500 px-6 py-3 text-base font-semibold text-white shadow-lg transition hover:bg-forest-400"
-                >
-                  Get Started Free
-                  <ArrowRightIcon className="h-4 w-4" />
-                </Link>
-                <Link
-                  href="/login"
-                  className="inline-flex items-center gap-2 rounded-lg border border-white/25 bg-white/10 px-6 py-3 text-base font-semibold text-white backdrop-blur-sm transition hover:bg-white/20"
-                >
-                  Log In
-                </Link>
-              </div>
-
-              <div className="mt-10 flex flex-wrap justify-center gap-4 lg:justify-start">
-                {[
-                  { value: "19", label: "Stocks & ETFs Tracked" },
-                  { value: "3", label: "Sponsor Tracks" },
-                  { value: "Live", label: "Gemini API" },
-                ].map((s) => (
-                  <div
-                    key={s.label}
-                    className="rounded-xl border border-white/10 bg-white/10 px-6 py-3 backdrop-blur-sm"
-                  >
-                    <div className="text-xl font-bold text-white">{s.value}</div>
-                    <div className="text-xs text-slate-300">{s.label}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
+            ))}
           </div>
         </div>
 
