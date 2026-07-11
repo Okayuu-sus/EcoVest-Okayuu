@@ -5,6 +5,7 @@ import IconChip, { ChipColor } from "./IconChip";
 import GradientBanner from "./GradientBanner";
 import Stepper from "./Stepper";
 import LandingReallocationPreview from "./LandingReallocationPreview";
+import Footer from "./Footer";
 import {
   TrendingUpIcon,
   LeafIcon,
@@ -377,6 +378,8 @@ export default function LandingScreen() {
           </p>
         </div>
       </section>
+
+      <Footer />
     </div>
   );
 }

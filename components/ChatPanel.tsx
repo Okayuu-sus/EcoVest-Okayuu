@@ -57,6 +57,16 @@ export default function ChatPanel() {
     };
   }, [pathname]);
 
+  // Lets GlobalSearch's "Ask Gemini Assistant" result open this panel from
+  // any page without the two components needing to share state directly.
+  useEffect(() => {
+    function handleOpenChat() {
+      setOpen(true);
+    }
+    window.addEventListener("ecovest:open-chat", handleOpenChat);
+    return () => window.removeEventListener("ecovest:open-chat", handleOpenChat);
+  }, []);
+
   const contextPortfolio: PortfolioLine[] = useMemo(() => {
     if (!account || account.positions.length === 0) return [];
     return account.positions
